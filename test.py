@@ -1,3 +1,5 @@
+#Teresa Sun - Database Application
+# import
 import sqlite3
 
 db = sqlite3.connect('cd.dp.db')

@@ -1,4 +1,4 @@
-#Teresa Sun - Database - Borrow_CD
+#Teresa Sun - Database Application
 
 #Import
 import sqlite3

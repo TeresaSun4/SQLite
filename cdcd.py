@@ -10,10 +10,10 @@ DATABASE = 'cd.db.dp'
 #Database and Table
 def init_db():
     #Create a customer table
-    conn = sqlite3.connect(DATABASE)
+    conn = sqlite3.connect('cd.dp.db')
     c = conn.cursor()
     c.execute('''
-        CREATE TABLE IF NOT EXISTS customers(
+        CREATE TABLE IS NOT EXISTS customers(
             customer_id TEXT PRIMARY KEY,
             first_name TEXT,
             last_name TEXT,
@@ -22,7 +22,7 @@ def init_db():
     ''')
     #Create a CD table
     c.execute('''
-        CREATE TABLE IF NOT EXISTS CD(
+        CREAT TABLE IF NOT EXISTS CD(
             cd_id INTEGER PRIMARY KEY,
             cd_name TEXT,
             cd_type TEXT,
@@ -69,7 +69,7 @@ def add_initial_cd_data():
         (14, 'OBSESSION', 'kpop', 98, 'EXO', 2015)
     ]
     #Connect to sqLite databse
-    conn = sqlite3.connect(DATABASE)
+    conn = sqlite3.connect('cd.dp')
     c = conn.cursor()
     c.executemany('INSERT INTO CD (cd_id, cd_name, cd_type, cd_quaity, cd_artist, cd_released_year) VALUES (?, ?, ?, ?, ?, ?, ?)', cd_data)
     conn.commit()
@@ -78,7 +78,7 @@ def add_initial_cd_data():
 
 #New user
 def add_user(customer_id, first_name, last_name, email):
-    conn = sqlite3.connect(DATABASE)
+    conn = sqlite3.connect('cd.dp.db')
     c = conn.cursor()
     try:
         #Add a new user to the customer table if they don't have an id yet
@@ -93,7 +93,7 @@ def add_user(customer_id, first_name, last_name, email):
 
 #Authrnticate a user from their email and user_id
 def authenticate_user(customer_id,email):
-    conn = sqlite3.connect(DATABASE)
+    conn = sqlite3.connect('cd.dp.db')
     c = conn.cursor()
     #Check does the uer have already got an email
     c.execute('SELECT * FROM customers WHERE customer_id=? AND email=?',(customer_id,email))
@@ -103,7 +103,7 @@ def authenticate_user(customer_id,email):
 
 #Borrow Cds
 def borrow_cd(cd_id, customer_id):
-    conn = sqlite3.connect(DATABASE)
+    conn = sqlite3.connect('cd.dp.db')
     c = conn.cursor()
     c.execute('SELECT cd_quantity FROM CD WHERE cd+id=?', (cd_id,))
     result = c.fetchone()
@@ -123,7 +123,7 @@ def borrow_cd(cd_id, customer_id):
 
 #Return CDs
 def return_cd(borrow_number):
-    conn = sqlite3.connect(DATABASE)
+    conn = sqlite3.connect('cd.dp.db')
     c = conn.cursor()
     c.execute('SELECT CD_id, borrow_date FROM borrow WHERE borrow_number=?', (borrow_number,))
     result = c.fetchone()
@@ -161,7 +161,6 @@ def list_all_CD():
             print(f"ID: {cd_id}, Title:{cd_name}, Status:{status}")
     #Close connection
     conn.close()
-   
 
 #Run the actual CD_borrow program
 def main():
@@ -211,7 +210,3 @@ def main():
             break
         else:
             print("Invalid option. Please try again.")
-
-
-
-        

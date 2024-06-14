@@ -3,17 +3,16 @@
 #Import
 import sqlite3
 import datetime
-
 #Database
-DATABASE = 'cd.db.dp'
+DATABASE = '/Users/teresa/sqlite/music.dp'
 
 #Database and Table
 def init_db():
     #Create a customer table
-    conn = sqlite3.connect('cd.dp.db')
-    c = conn.cursor()
-    c.execute('''
-        CREATE TABLE IS NOT EXISTS customers(
+    conn = sqlite3.connect(DATABASE)
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS customers(
             customer_id TEXT PRIMARY KEY,
             first_name TEXT,
             last_name TEXT,
@@ -21,8 +20,8 @@ def init_db():
         )
     ''')
     #Create a CD table
-    c.execute('''
-        CREAT TABLE IF NOT EXISTS CD(
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS CD(
             cd_id INTEGER PRIMARY KEY,
             cd_name TEXT,
             cd_type TEXT,
@@ -32,7 +31,7 @@ def init_db():
         )
     ''')
     #Create a uses table
-    c.execute('''
+    cursor.execute('''
         CREATE TABLE IF NOT EXISTS borrow(
             borrow_number INTEGER PRIMARY KEY AUTOINCREMENT,
             customer_id TEXT,
@@ -43,7 +42,7 @@ def init_db():
             pre_order TEXT,
             overtime_payment REAL,
             FOREIGN KEY(customer_id) REFERENCES customers(customer_id),
-            FOREIGN KEY(CD_id) REFERENCES CD(cd_id)
+            FOREIGN KEY(cd_id) REFERENCES CD(cd_id)
         )
     ''')
     conn.commit()
@@ -69,20 +68,20 @@ def add_initial_cd_data():
         (14, 'OBSESSION', 'kpop', 98, 'EXO', 2015)
     ]
     #Connect to sqLite databse
-    conn = sqlite3.connect('cd.dp')
-    c = conn.cursor()
-    c.executemany('INSERT INTO CD (cd_id, cd_name, cd_type, cd_quaity, cd_artist, cd_released_year) VALUES (?, ?, ?, ?, ?, ?, ?)', cd_data)
-    conn.commit()
+    db = sqlite3.connect(DATABASE)
+    cursor = db.cursor()
+    sql="INSERT INTO CD (cd_id, cd_name, cd_types, cd_quantity, cd_artist, cd_released_year) VALUES (?, ?, ?, ?, ?, ?);"
+    db.commit()
     #Close connection
-    conn.close()
+    db.close()
 
 #New user
 def add_user(customer_id, first_name, last_name, email):
-    conn = sqlite3.connect('cd.dp.db')
-    c = conn.cursor()
+    conn = sqlite3.connect(DATABASE)
+    cursor = conn.cursor()
     try:
         #Add a new user to the customer table if they don't have an id yet
-        c.execute('INSERT INTO customers (customer_id, first_name, last_name, email) VALUES (?, ?, ?, ?)',
+        c.execute('INSERT INTO customers (customer_id, first_name, last_name, email) VALUES (?, ?, ?, ?);',
                   (customer_id, first_name, last_name, email))
         conn.commit()
         print("Customer added successfully.")
@@ -93,19 +92,19 @@ def add_user(customer_id, first_name, last_name, email):
 
 #Authrnticate a user from their email and user_id
 def authenticate_user(customer_id,email):
-    conn = sqlite3.connect('cd.dp.db')
-    c = conn.cursor()
+    conn = sqlite3.connect(DATABASE)
+    cursor = conn.cursor()
     #Check does the uer have already got an email
-    c.execute('SELECT * FROM customers WHERE customer_id=? AND email=?',(customer_id,email))
+    cursor.execute('SELECT * FROM customers WHERE customer_id=? AND email=?',(customer_id,email))
     user = c.fetchone()
-    conn.clost()
+    conn.close()
     return user is not None
 
 #Borrow Cds
 def borrow_cd(cd_id, customer_id):
-    conn = sqlite3.connect('cd.dp.db')
-    c = conn.cursor()
-    c.execute('SELECT cd_quantity FROM CD WHERE cd+id=?', (cd_id,))
+    conn = sqlite3.connect(DATABASE)
+    cursor = conn.cursor()
+    cursor.execute('SELECT cd_quantity FROM CD WHERE cd_id=?', (cd_id,))
     result = c.fetchone()
     if result is None:
         print("CD does not exists.")
@@ -113,8 +112,8 @@ def borrow_cd(cd_id, customer_id):
         print("CD is not available.")
     else:
         borrow_date = datetime.datetime.now().strftime("%Y-%m-%d")
-        c.execute('UPDATE CD SET cd_quantity = cd_quantity-1 WHERE cd_id=?',(cd_id))
-        c.execute('INSERT INTO borrow (customer_id, CD_id, borrow_date, location) VALUES (?, ?, ?, ?)',
+        cursor.execute('UPDATE CD SET cd_quantity = cd_quantity-1 WHERE cd_id=?',(cd_id))
+        cursor.execute('INSERT INTO borrow (customer_id, CD_id, borrow_date, location) VALUES (?, ?, ?, ?);',
                   (customer_id,cd_id,borrow_date,'kpop'))
         conn.commit()
         print("CD borrowed successfully.")
@@ -123,9 +122,9 @@ def borrow_cd(cd_id, customer_id):
 
 #Return CDs
 def return_cd(borrow_number):
-    conn = sqlite3.connect('cd.dp.db')
-    c = conn.cursor()
-    c.execute('SELECT CD_id, borrow_date FROM borrow WHERE borrow_number=?', (borrow_number,))
+    conn = sqlite3.connect(DATABASE)
+    cursor = conn.cursor()
+    cursor.execute('SELECT cd_id, borrow_date FROM borrow WHERE borrow_number=?', (borrow_number,))
     result = c.fetchone()
     if result is None:
         print("Borrow record does not exist.")
@@ -136,8 +135,8 @@ def return_cd(borrow_number):
         overdue_days = (datetime.datetime.now() - borrow_date).days - 14
         overdue_payment = max(0, overdue_days * 1.0)
         #Record the time
-        c.execute('UPDATE CD SET cd_quantity=cd_quantity+1 WHERE cd_id=?', (cd_id,))
-        c.execute('UPDATE borrow SET return_date=?, overtime_payment=? WHERE borrow_number=?', 
+        cursor.execute('UPDATE CD SET cd_quantity=cd_quantity+1 WHERE cd_id=?', (cd_id,))
+        cursor.execute('UPDATE borrow SET return_date=?, overtime_payment=? WHERE borrow_number=?', 
                    (return_date, overdue_payment, borrow_number))
         conn.commit()
         print("CD returned successfully.")
@@ -149,9 +148,9 @@ def return_cd(borrow_number):
 #List all the CDs        
 def list_all_CD():
     conn = sqlite3.connect('cd.dp.db')
-    c = conn.cursor()
-    c.execute('SELEXT cd_id, cd_name, cd_quantity FROM CD')
-    CDs = c.fetchall()
+    cursor = conn.cursor()
+    cursor.execute('SELEXT cd_id, cd_name, cd_quantity FROM CD')
+    CDs = cursor.fetchall()
     if not CDs:
         print("No CDs found.")
     else:
@@ -161,6 +160,7 @@ def list_all_CD():
             print(f"ID: {cd_id}, Title:{cd_name}, Status:{status}")
     #Close connection
     conn.close()
+   
 
 #Run the actual CD_borrow program
 def main():
@@ -210,3 +210,12 @@ def main():
             break
         else:
             print("Invalid option. Please try again.")
+
+
+if __name__ == "__main__":
+    main()
+
+
+
+
+        

@@ -81,7 +81,7 @@ def add_user(customer_id, first_name, last_name, email):
     cursor = conn.cursor()
     try:
         #Add a new user to the customer table if they don't have an id yet
-        c.execute('INSERT INTO customers (customer_id, first_name, last_name, email) VALUES (?, ?, ?, ?);',
+        cursor.execute('INSERT INTO customers (customer_id, first_name, last_name, email) VALUES (?, ?, ?, ?);',
                   (customer_id, first_name, last_name, email))
         conn.commit()
         print("Customer added successfully.")

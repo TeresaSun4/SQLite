@@ -207,11 +207,6 @@ def main():
                 borrow_cd(cd_id, customer_id)
             else:
                 print(Fore.YELLOW +"Please log in first."+ Style.RESET_ALL)
-        elif user_option == '6':
-            if customer_id:
-                return_cd(customer_id)
-            else:
-                print("Please log in first.")
         elif user_option == '4':
             if customer_id:
                 borrow_number = input("Enter borrow number: ")

@@ -5,6 +5,7 @@ import sqlite3
 import datetime
 from colorama import Fore, Style, init
 
+#Initialize colorama
 init(autoreset=True)
 
 #Database
@@ -80,8 +81,8 @@ def add_initial_cd_data():
         sql ="INSERT INTO CD (cd_id, cd_name, cd_type, cd_quantity, cd_artist, cd_released_Year) VALUES (?, ?, ?, ?, ?, ?);"
         cursor.executemany(sql, cd_data)
         db.commit()
-        #Close connection
-        db.close()
+    #Close connection
+    db.close()
 
 #New user
 def add_user(customer_id, first_name, last_name, email):
@@ -132,6 +133,8 @@ def borrow_cd(cd_id, customer_id):
 def return_cd(customer_id):
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
+    cursor.execute('SELECT cd_id, borrow_date FROM borrow WHERE borrow_number=?', (borrow_number,))
+    result = cursor.fetchone()
     try:
         #Selects all borrow record based on user customer id
         cursor.execute('''

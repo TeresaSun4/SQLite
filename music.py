@@ -4,7 +4,7 @@
 import sqlite3
 import datetime
 #Database
-DATABASE = '/Users/teresa/sqlite/music.dp'
+DATABASE = 'Music.db'
 
 #Database and Table
 def init_db():
@@ -35,7 +35,7 @@ def init_db():
         CREATE TABLE IF NOT EXISTS borrow(
             borrow_number INTEGER PRIMARY KEY AUTOINCREMENT,
             customer_id TEXT,
-            CD_id INTEGER,
+            cd_id INTEGER,
             borrow_date TEXT,
             return_date TEXT,
             Location TEXT,
@@ -70,7 +70,8 @@ def add_initial_cd_data():
     #Connect to sqLite databse
     db = sqlite3.connect(DATABASE)
     cursor = db.cursor()
-    sql="INSERT INTO CD (cd_id, cd_name, cd_types, cd_quantity, cd_artist, cd_released_year) VALUES (?, ?, ?, ?, ?, ?);"
+    sql ="INSERT INTO CD (cd_id, cd_name, cd_type, cd_quantity, cd_artist, cd_released_Year) VALUES (?, ?, ?, ?, ?, ?);"
+    cursor.executemany(sql, cd_data)
     db.commit()
     #Close connection
     db.close()
@@ -95,17 +96,17 @@ def authenticate_user(customer_id,email):
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
     #Check does the uer have already got an email
-    cursor.execute('SELECT * FROM customers WHERE customer_id=? AND email=?',(customer_id,email))
-    user = c.fetchone()
+    cursor.execute('SELECT * FROM customers WHERE customer_id=? AND email=?',(customer_id, email))
+    user = cursor.fetchone()
     conn.close()
     return user is not None
 
-#Borrow Cds
+#Borrow CDs
 def borrow_cd(cd_id, customer_id):
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
     cursor.execute('SELECT cd_quantity FROM CD WHERE cd_id=?', (cd_id,))
-    result = c.fetchone()
+    result = cursor.fetchone()
     if result is None:
         print("CD does not exists.")
     elif result[0] == 0:
@@ -113,7 +114,7 @@ def borrow_cd(cd_id, customer_id):
     else:
         borrow_date = datetime.datetime.now().strftime("%Y-%m-%d")
         cursor.execute('UPDATE CD SET cd_quantity = cd_quantity-1 WHERE cd_id=?',(cd_id))
-        cursor.execute('INSERT INTO borrow (customer_id, CD_id, borrow_date, location) VALUES (?, ?, ?, ?);',
+        cursor.execute('INSERT INTO borrow (customer_id, cd_id, borrow_date, location) VALUES (?, ?, ?, ?);',
                   (customer_id,cd_id,borrow_date,'kpop'))
         conn.commit()
         print("CD borrowed successfully.")
@@ -125,7 +126,7 @@ def return_cd(borrow_number):
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
     cursor.execute('SELECT cd_id, borrow_date FROM borrow WHERE borrow_number=?', (borrow_number,))
-    result = c.fetchone()
+    result = cursor.fetchone()
     if result is None:
         print("Borrow record does not exist.")
     else:
@@ -147,9 +148,9 @@ def return_cd(borrow_number):
 
 #List all the CDs        
 def list_all_CD():
-    conn = sqlite3.connect('cd.dp.db')
+    conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
-    cursor.execute('SELEXT cd_id, cd_name, cd_quantity FROM CD')
+    cursor.execute('SELECT cd_id, cd_name, cd_quantity FROM CD')
     CDs = cursor.fetchall()
     if not CDs:
         print("No CDs found.")
@@ -178,13 +179,13 @@ def main():
         print("5. List All CDs") #List all the avaliable CDs
         print("0. Exit") #Logout the program
         user_option= input("Choose an option: ")
-        if user_option== '1':
+        if user_option == '1':
             customer_id = input("Enter customer ID: ")
             first_name = input("Enter first name: ")
             last_name = input("Enter last name: ")
             email = input("Enter email: ")
             add_user(customer_id, first_name, last_name, email)
-        elif user_option=='2':
+        elif user_option =='2':
             customer_id = input("Enter customerID: ")
             email = input("Enter email: ")
             if authenticate_user(customer_id, email):
@@ -192,21 +193,21 @@ def main():
             else:
                 print("Invalid ID or email.")
                 customer_id = None
-        elif user_option=='3':
+        elif user_option =='3':
             if customer_id:
                 cd_id = input("Enter CD ID: ")
                 borrow_cd(cd_id, customer_id)
             else:
                 print("Please log in first.")
-        elif user_option== '4':
+        elif user_option == '4':
             if customer_id:
                 borrow_number = input("Enter borrow number: ")
                 return_cd(borrow_number)
             else:
                 print("Please log in first.")
-        elif user_option== '5':
+        elif user_option == '5':
             list_all_CD()
-        elif user_option== '0':
+        elif user_option == '0':
             break
         else:
             print("Invalid option. Please try again.")
@@ -214,8 +215,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
-        
